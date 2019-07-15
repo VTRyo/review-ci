@@ -1,0 +1,27 @@
+description: |
+  Build PDF
+
+usage:
+  version: 2.1
+
+  orbs:
+    review-ci: vtryo/review-ci@x.y.z
+
+  workflows:
+    build-and-output-article:
+      jobs:
+        # Build PDF and PDF available for download from Artifacts.
+        # ex) https://circleci.com/gh/{user_name}/{project_name}/{build_number}#artifacts
+        - review-ci/build-and-output-article:
+
+            # code checkout. Defaults to true.
+            checkout: true
+
+            # PDF available for download from Artifacts. Defaults to true.
+            store_artifacts: true
+
+            # Built PDF file path. Defaults to './articles'.
+            output-path: myPDFPath
+
+            # Built PDF file name. Defaults to 'book'.
+            output-name: myPDFName

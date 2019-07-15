@@ -1,0 +1,40 @@
+description: |
+  Build PDF
+
+executor: <<parameters.executor>>
+
+parameters:
+  executor:
+    description: executor to use for this job
+    type: executor
+    default: default
+
+  checkout:
+    description: >
+      Boolean for whether or not to checkout as a first step. Defaults to true.
+    type: boolean
+    default: true
+
+  store_artifacts:
+    description: >
+      Boolean for whether or not to checkout as a first step. Defaults to true.
+    type: boolean
+    default: true
+
+  output-path:
+    description: >
+      Built PDF file path. Defaults to './articles'.
+    type: string
+    default: ./articles
+
+  output-name:
+    description: >
+      Built PDF file name. Defaults to 'book'.
+    type: string
+    default: book
+
+steps:
+  - build-and-output-article:
+      checkout: << parameters.checkout >>
+      store_artifacts: << parameters.store_artifacts >>
+      output-name: << parameters.output-name >>

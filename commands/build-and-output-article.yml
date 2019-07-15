@@ -1,0 +1,48 @@
+description: |
+  Build PDF
+
+
+parameters:
+  executor:
+    description: executor to use for this job
+    type: executor
+    default: default
+
+  checkout:
+    description: >
+      Boolean for whether or not to checkout as a first step. Defaults to true.
+    type: boolean
+    default: true
+
+  store_artifacts:
+    description: >
+      Boolean for whether or not to checkout as a first step. Defaults to true.
+    type: boolean
+    default: true
+
+  output-path:
+    description: >
+      Built PDF file path. Defaults to './articles'.
+    type: string
+    default: ./articles
+
+  output-name:
+    description: >
+      Built PDF file name. Defaults to 'book'.
+    type: string
+    default: book
+
+steps:
+  - when:
+      condition: << parameters.checkout >>
+      steps:
+        - checkout
+  - run:
+      name: Build PDF
+      command: ./setup.sh && REVIEW_CONFIG_FILE=$REVIEW_CONFIG_FILE npm run pdf
+  - when:
+      condition: << parameters.store_artifacts >>
+      steps:
+        - store_artifacts:
+            path: << parameters.output-path >>/<< parameters.output-name >>.pdf
+            destination: << parameters.output-name >>.pdf

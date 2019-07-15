@@ -1,0 +1,5 @@
+version: 2.1
+
+description: |
+  CircleCI orb for RE:VIEW CI tool.
+  https://github.com/VTRyo/review-ci
