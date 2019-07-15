@@ -37,4 +37,3 @@ steps:
   - build-and-output-article:
       checkout: << parameters.checkout >>
       store_artifacts: << parameters.store_artifacts >>
-      output-name: << parameters.output-name >>
