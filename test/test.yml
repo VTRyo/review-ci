@@ -1,0 +1,15 @@
+version: 2.1
+
+executors:
+  default:
+    docker:
+      - image: vvakame/review:3.1
+
+jobs:
+  build-and-output-article:
+      jobs:
+        - review-ci/build-and-output-article:
+            checkout: true
+            store_artifacts: true
+            output-path: ./articles
+            output-name: book

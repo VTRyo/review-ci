@@ -1,0 +1,118 @@
+version: 2.1
+
+orbs:
+  orb-tools: circleci/orb-tools@8.3.0
+
+# yaml anchor filters
+integration-dev_filters: &integration-dev_filters
+  branches:
+    ignore: /.*/
+  tags:
+    only: /integration-.*/
+
+integration-master_filters: &integration-master_filters
+  branches:
+    ignore: /.*/
+  tags:
+    only: /master-.*/
+
+prod-deploy_requires: &prod-deploy_requires
+  [test-commands-master]
+
+workflows:
+  lint_pack-validate_publish-dev:
+    jobs:
+      - orb-tools/lint
+      - orb-tools/pack:
+          requires:
+            - orb-tools/lint
+      - orb-tools/publish-dev:
+          context: orb-publishing
+          orb-name: vtryo/review-ci
+          requires:
+            - orb-tools/pack
+      - orb-tools/trigger-integration-workflow:
+          ssh-fingerprints: ac:f2:f7:40:35:1b:c0:ae:cc:6e:13:17:2d:37:c8:69
+          requires:
+            - orb-tools/publish-dev
+          filters:
+            branches:
+              ignore: master
+      - orb-tools/trigger-integration-workflow:
+          ssh-fingerprints: ac:f2:f7:40:35:1b:c0:ae:cc:6e:13:17:2d:37:c8:69
+          tag: master
+          requires:
+            - orb-tools/publish-dev
+          filters:
+            branches:
+              only: master
+
+  integration-tests_prod-release:
+    jobs:
+      - orb-tools/pack:
+          name: pack-dev
+          filters: *integration-dev_filters
+
+      - orb-tools/test-in-builds:
+          attach-workspace: true
+          orb-name: revivew-ci
+          test-steps:
+            - orb-tools/local-test-build:
+                test-config-location: test/test.yml
+          name: test-commands-dev
+          context: orb-publishing
+          filters: *integration-dev_filters
+          requires:
+            - pack-dev
+
+      - orb-tools/pack:
+          name: pack-master
+          filters: *integration-master_filters
+
+      - orb-tools/test-in-builds:
+          attach-workspace: true
+          orb-name: review-ci
+          test-steps:
+            - orb-tools/local-test-build:
+                test-config-location: test/test.yml
+          name: test-commands-master
+          context: orb-publishing
+          filters: *integration-master_filters
+          requires:
+            - pack-master
+
+      # patch, minor, or major publishing
+      - orb-tools/dev-promote-prod:
+          name: dev-promote-patch
+          context: orb-publishing
+          orb-name: vtryo/review-ci
+          requires: *prod-deploy_requires
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /master-patch.*/
+
+      - orb-tools/dev-promote-prod:
+          name: dev-promote-minor
+          context: orb-publishing
+          orb-name: vtryo/review-ci
+          release: minor
+          requires: *prod-deploy_requires
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /master-minor.*/
+
+      - orb-tools/dev-promote-prod:
+          name: dev-promote-major
+          context: orb-publishing
+          orb-name: vtryo/review-ci
+          release: major
+          requires: *prod-deploy_requires
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /master-major.*/
